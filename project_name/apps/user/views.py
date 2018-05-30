@@ -63,7 +63,6 @@ class Register(FormView):
             email = form.cleaned_data.get('email')
             password1 = form.cleaned_data.get('password1')
             password2 = form.cleaned_data.get('password2')
-            country = form.cleaned_data.get('country')
 
             if password2 != password1:
                 return render(request, 'sign.html', {
@@ -87,7 +86,6 @@ class Register(FormView):
             confirm_hash = create_default_hash()
 
             new_user.profile.confirm_hash = confirm_hash
-            new_user.profile.country = country
             new_user.profile.save()
 
             confirm_link = 'https://%s%s' % (
@@ -97,7 +95,7 @@ class Register(FormView):
 
             send_email_in_template(
                 'Your registration in bolstrim.com', email, **{
-                    'text': "Thanks for registering on bolstrim.com. Please confirm your registration by clicking on "
+                    'text': "Thanks for registering on {{ project_name }}.com. Please confirm your registration by clicking on "
                             "the link below.",
                     'link': confirm_link,
                     'link_name': 'Confirm'
@@ -159,9 +157,8 @@ class PasswordForgot(FormView):
         user.profile.pw_onetime_hash = pw_onetime_hash
         user.profile.save()
 
-        event = Event.objects.last()
         send_email_in_template(
-            'Deine Zugangsdaten für %s' % event.title,
+            'your new access',
             email,
             'email/pw_reset.html',
             **{
@@ -171,7 +168,6 @@ class PasswordForgot(FormView):
                     request.META.get('HTTP_HOST'),
                     reverse('password_reset', kwargs={'onetime_hash': pw_onetime_hash})
                 ),
-                'orga_name': event.company_name
             }
         )
         return redirect(reverse('password_forgot_success'))
@@ -184,7 +180,7 @@ class PasswordReset(FormView):
 
         user_profile = Profile.objects.filter(pw_onetime_hash=onetime_hash).last()
         if not user_profile:
-            error = 'Der Link ist nicht mehr gültig.'
+            error = 'link is invalid'
             return render(request, 'password_reset.html', {
                 'error': error, 'link_invalid': 'yes'
             })
@@ -207,12 +203,12 @@ class PasswordReset(FormView):
 
         if not Profile.objects.filter(id=user_profile_id).last():
             return render(request, 'password_reset.html', {
-                'error': 'Fehler beim Passwort zurücksetzen!'
+                'error': 'error while resetting'
             })
 
         if password1 != password1:
             return render(request, 'password_reset.html', {
-                'error': 'Passwörter stimmen nicht überein.'
+                'error': 'passwords dont match'
             })
 
         user_profile = Profile.objects.get(id=user_profile_id)

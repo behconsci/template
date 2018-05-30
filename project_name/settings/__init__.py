@@ -22,6 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '{{ secret_key }}'
 
+LOCALE_PATHS = (
+    os.path.realpath('locale'),
+)
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -116,10 +120,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/{{ docs_version }}/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Europe/Berlin'
+
+TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
-USE_TZ = False
+USE_TZ = True
 
 
 STATIC_URL = '/static/'
@@ -130,4 +135,61 @@ STATICFILES_DIRS = (
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+LOGFILE_ROOT = BASE_DIR
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'strm': sys.stdout
+        },
+    },
+    'formatters': {
+        'standard': {
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOGFILE_ROOT, 'error_log'),
+            'maxBytes': 50000000,
+            'backupCount': 2,
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'WARN',
+        },
+        '{{ project_name }}': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+        },
+        'django.request': {
+            'handlers': ['console', 'logfile'],
+            'level': 'ERROR',
+        },
+        '': {
+            'handlers': ['logfile'],
+            'level': 'ERROR',
+        },
+    }
+}
+
 

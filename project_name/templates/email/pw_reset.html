@@ -1,0 +1,16 @@
+{% extends "../base.html" %}
+
+{% block main %}
+
+    <p>du hast dein Passwort für dein Benutzerprofil auf {{ request_domain }} vergessen.</p>
+
+    Dein Benutzername lautet: {{ user_name }}
+
+    <p>Bitte nutze den folgenden Link, um ein neues Passwort zu wählen:</p>
+
+    {{ pw_reset_url }}
+
+    <p>Unter dem angegebenen Link kannst du ganz einfach ein neues Passwort eingeben.
+    Du wirst dann direkt wieder auf {{ request_domain }} angemeldet.</p>
+
+{% endblock %}
