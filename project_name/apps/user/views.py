@@ -94,7 +94,10 @@ class Register(FormView):
             )
 
             send_email_in_template(
-                'Your registration in {{ project_name }}.com', email, **{
+                'Your registration in {{ project_name }}.com',
+                email,
+                'email/template.html',
+                **{
                     'text': "Thanks for registering on {{ project_name }}.com. Please confirm your registration by clicking on "
                             "the link below.",
                     'link': confirm_link,
