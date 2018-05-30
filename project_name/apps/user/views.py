@@ -3,6 +3,7 @@ from django.views.generic import FormView
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
+from django.utils import timezone
 
 from .forms import LoginForm, RegisterForm
 from {{ project_name }}.apps.core.utils import send_email_in_template
@@ -133,3 +134,92 @@ class ProfileView(LoginRequiredMixin, FormView):
 
     def get(self, request, *args, **kwargs):
         return render(request, 'profile.html')
+
+
+class PasswordForgot(FormView):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'request_password_reset.html')
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+
+        if not email:
+            return render(request, 'request_password_reset.html', {
+                'error_no_input': 'yes', 'email': email
+            })
+
+        if not User.objects.filter(email=email).count():
+            return render(request, 'request_password_reset.html', {
+                'error_user_not_found': 'yes', 'email': email
+            })
+
+        user = User.objects.filter(email=email).last()
+
+        pw_onetime_hash = create_default_hash()
+        user.profile.pw_onetime_hash = pw_onetime_hash
+        user.profile.save()
+
+        event = Event.objects.last()
+        send_email_in_template(
+            'Deine Zugangsdaten für %s' % event.title,
+            email,
+            'email/pw_reset.html',
+            **{
+                'request_domain': request.META.get('HTTP_HOST'),
+                'user_name': user.username,
+                'pw_reset_url': 'https://%s%s' % (
+                    request.META.get('HTTP_HOST'),
+                    reverse('password_reset', kwargs={'onetime_hash': pw_onetime_hash})
+                ),
+                'orga_name': event.company_name
+            }
+        )
+        return redirect(reverse('password_forgot_success'))
+
+
+class PasswordReset(FormView):
+
+    def get(self, request, *args, **kwargs):
+        onetime_hash = kwargs.get('onetime_hash')
+
+        user_profile = Profile.objects.filter(pw_onetime_hash=onetime_hash).last()
+        if not user_profile:
+            error = 'Der Link ist nicht mehr gültig.'
+            return render(request, 'password_reset.html', {
+                'error': error, 'link_invalid': 'yes'
+            })
+
+        # invalidate the confirm hash
+        now = timezone.now()
+        user_profile.pw_onetime_hash = '%s-clicked-at-%s' % (
+            onetime_hash, '%s_%s_%s_%s_%s' % (now.year, now.month, now.day, now.hour, now.minute)
+        )
+        user_profile.save()
+
+        return render(request, 'password_reset.html', {
+            'user_profile_id': user_profile.id
+        })
+
+    def post(self, request, *args, **kwargs):
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        user_profile_id = request.POST.get('user_profile_id')
+
+        if not Profile.objects.filter(id=user_profile_id).last():
+            return render(request, 'password_reset.html', {
+                'error': 'Fehler beim Passwort zurücksetzen!'
+            })
+
+        if password1 != password1:
+            return render(request, 'password_reset.html', {
+                'error': 'Passwörter stimmen nicht überein.'
+            })
+
+        user_profile = Profile.objects.get(id=user_profile_id)
+        user = user_profile.user
+        user.set_password(password2)
+        user.save()
+
+        login(request, user)
+
+        return redirect('%s?password_changed=1' % reverse('profile'))

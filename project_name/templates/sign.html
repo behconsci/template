@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main %}
+
+    <div class="bg-portfolio">
+        <div class="container">
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2 class="title">SIGN UP / SIGN IN</h2>
+                    <hr style="margin-bottom: 1px">
+                </div>
+            </div>
+
+            <div class="row row-portfolio" style="margin-bottom: 100px">
+                <div class="col-sm-6 margin-bottom-xs">
+                    <div class="wrapper-portfolio">
+
+                        <h3 class="text-center">Sign up</h3>
+
+                        {% if reg_error %}
+                            <p style="color: red"><b>{{ reg_error }}</b></p>
+                        {% endif %}
+
+                        {% if request.GET.invalid_link %}
+                            <p style="color: red"><b>This link is not valid anymore.</b></p>
+                        {% endif %}
+
+                        {% if request.GET.please_confirm %}
+                            <h4 style="color: green; font-weight: bold">
+                                We sent you email. Please confirm your registration.
+                            </h4>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'register' %}">
+                            {% csrf_token %}
+                            {{ register_form.as_p }}
+                            <button class="btn btn-success">Sign up</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-sm-6 margin-bottom-xs">
+                    <div class="wrapper-portfolio">
+                        <h3 class="text-center">Sign in</h3>
+
+                        {% if login_error %}
+                            <p style="color: red"><b>{{ login_error }}</b></p>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'login' %}">
+                            {% csrf_token %}
+                            {{ login_form.as_p }}
+                            <button class="btn btn-success">Sign in</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

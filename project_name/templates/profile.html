@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block main %}
+
+    <div class="bg-portfolio">
+        <div class="container">
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <h2 class="title">My Profile</h2>
+
+                    <hr style="margin-bottom: 1px">
+
+                    {% if request.GET.registration_complete %}
+                        <h3 style="color: green;font-weight: bold" class="text-center">
+                            Success! Your registration is now complete.
+                        </h3>
+                    {% endif %}
+
+                    {% if request.GET.already_confirmed %}
+                        <h3 style="color: green;font-weight: bold" class="text-center">
+                            Your registration was already confirmed.
+                        </h3>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -8,6 +8,8 @@ from {{ project_name }}.apps.core.models import Base, create_default_hash
 
 class Profile(Base):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
+    confirm_hash = models.CharField(max_length=60, default='')
+    pw_onetime_hash = models.CharField(max_length=60, default='')
 
     def __str__(self):
         return self.user.username

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 
 
 def letsencrypt(request):
@@ -9,5 +9,8 @@ def letsencrypt(request):
 
 
 def index(request):
-    return render(request, 'index.html')
+    if request.user.is_authenticated:
+        return redirect(reverse('profile'))
+
+    return redirect(reverse('login'))
 
