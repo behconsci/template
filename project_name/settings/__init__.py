@@ -28,7 +28,7 @@ LOCALE_PATHS = (
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = eval(os.environ.get('DEBUG', 'False'))
 
 
 EMAIL_HOST = 'smtp.sendgrid.net'
