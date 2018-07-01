@@ -91,8 +91,12 @@ WSGI_APPLICATION = '{{ project_name }}.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DB_NAME', 'no_DB_NAME'),
+        'USER': os.environ.get('DB_USER', 'no_DB_USER'),
+        'PASSWORD': os.environ.get('DB_PWD', 'no_DB_PWD'),
+        'HOST': os.environ.get('DB_HOST', 'no_DB_HOST'),
+        'PORT': os.environ.get('DB_PORT', 'no_DB_PORT'),
     }
 }
 
